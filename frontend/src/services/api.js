@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:5002/api"
+    baseURL: "https://zynora-ai.onrender.com/api"
 });
 
 api.interceptors.request.use((config) => {
