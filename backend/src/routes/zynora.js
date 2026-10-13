@@ -26,29 +26,57 @@ const router = express.Router();
 // CREATE CONVERSATION
 // ======================================================
 
+
 router.post("/conversations", authenticate, (req, res) => {
+    try {
+        const userId = Number(req.user?.id);
 
-    const title =
-        req.body.title?.trim() ||
-        "New Conversation";
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid user session. Please log in again."
+            });
+        }
 
-    const result = db.prepare(`
-        INSERT INTO conversations
-        (user_id, title)
-        VALUES (?, ?)
-    `).run(req.user.id, title);
+        // Confirm the authenticated user exists in this database.
+        const user = db
+            .prepare("SELECT id FROM users WHERE id = ?")
+            .get(userId);
 
-    const conversation = db.prepare(`
-        SELECT *
-        FROM conversations
-        WHERE id = ?
-    `).get(result.lastInsertRowid);
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                error: "User session is no longer valid. Please log out and register or log in again."
+            });
+        }
 
-    res.status(201).json({
-        success: true,
-        conversation
-    });
+        const title =
+            typeof req.body?.title === "string" && req.body.title.trim()
+                ? req.body.title.trim()
+                : "New Conversation";
+
+        const result = db
+            .prepare("INSERT INTO conversations (user_id, title) VALUES (?, ?)")
+            .run(userId, title);
+
+        const conversation = db
+            .prepare("SELECT * FROM conversations WHERE id = ? AND user_id = ?")
+            .get(result.lastInsertRowid, userId);
+
+        return res.status(201).json({
+            success: true,
+            conversation
+        });
+    } catch (error) {
+        console.error("Create conversation error:", error.message);
+
+        return res.status(500).json({
+            success: false,
+            error: "Unable to create conversation."
+        });
+    }
 });
+
 
 
 // ======================================================
