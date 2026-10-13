@@ -25,15 +25,16 @@ const PORT =
 // MIDDLEWARE
 // ======================================================
 
-app.use(
-    cors({
-        origin: process.env.CLIENT_URL ||
-            "http://localhost:5173"
-    })
-);
+const allowedOrigins = [
+    "http://localhost:5173",
+    process.env.CLIENT_URL
+].filter(Boolean);
 
-app.use(express.json({
-    limit: "1mb"
+app.use(cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
 }));
 
 
