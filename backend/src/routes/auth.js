@@ -88,6 +88,13 @@ router.post("/login", async (req, res) => {
                 WHERE email = ?
             `)
             .get(email?.toLowerCase());
+        
+        console.log("[LOGIN DIAGNOSTIC]", {
+            emailProvided: Boolean(email),
+            userFound: Boolean(user),
+            sqlitePathConfigured: Boolean(process.env.SQLITE_PATH)
+        });
+
 
         if (!user) {
             return res.status(401).json({
