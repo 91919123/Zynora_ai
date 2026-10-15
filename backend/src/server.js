@@ -23,23 +23,36 @@ const PORT =
     Number(process.env.PORT) || 5002;
 
 
+
 // ======================================================
 // MIDDLEWARE
 // ======================================================
 
+
 const allowedOrigins = [
+    process.env.CLIENT_URL,
     "http://localhost:5173",
-    process.env.CLIENT_URL
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:5175"
 ].filter(Boolean);
 
 app.use(cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error("Origin not allowed by CORS"));
+    }
 }));
 
-app.use(express.json({ limit: "1mb" }));
+
+app.use(express.json({
+    limit: "1mb"
+}));
 
 
 // Rate limiting

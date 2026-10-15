@@ -111,43 +111,50 @@ function App() {
         setMessages([]);
     };
 
-    /* =====================================================
-       OPEN CONVERSATION
-       ===================================================== */
+    
+/* =====================================================
+   OPEN CONVERSATION
+   ===================================================== */
 
-       const openConversation = useCallback(async (id) => {
-        try {
-            const response = await api.get(
-                `/zynora/conversations/${id}`
-            );
+const openConversation = useCallback(async (id) => {
+    try {
+        const response = await api.get(
+            `/zynora/conversations/${id}`
+        );
 
-            const conversation =
-                response.data?.conversation;
+        const conversation =
+            response.data?.conversation;
 
-            if (!conversation) return;
-
-            setConversationId(conversation.id);
-
-            const loadedMessages =
-                conversation.messages || [];
-
-            setMessages(
-                loadedMessages.map((item) => ({
-                    role: item.role,
-                    content: item.content,
-                    grounded: item.grounded,
-                    confidence: item.confidence,
-                    latency_ms: item.latency_ms,
-                    sources: item.sources || []
-                }))
-            );
-        } catch (error) {
-            console.error(
-                "Unable to open conversation:",
-                error
-            );
+        if (!conversation) {
+            console.error("Conversation not found");
+            return;
         }
-    }, []);
+
+        setConversationId(conversation.id);
+
+        // FIX: Messages are returned separately by the backend
+        const loadedMessages =
+            response.data?.messages || [];
+
+        setMessages(
+            loadedMessages.map((item) => ({
+                role: item.role,
+                content: item.content,
+                grounded: item.grounded,
+                confidence: item.confidence,
+                latency_ms: item.latency_ms,
+                sources: item.sources || []
+            }))
+        );
+
+    } catch (error) {
+        console.error(
+            "Unable to open conversation:",
+            error.response?.data || error.message
+        );
+    }
+}, []);
+
 
     /* =====================================================
        LOAD CONVERSATIONS
